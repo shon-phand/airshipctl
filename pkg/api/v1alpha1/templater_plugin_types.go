@@ -15,8 +15,9 @@
 package v1alpha1
 
 import (
+	"encoding/json"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+//	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // +kubebuilder:object:root=true
@@ -27,7 +28,7 @@ type Templater struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Values contains map with object parameters to render
-	Values map[string]interface{} `json:"values,omitempty"`
+	Values json.RawMessage `json:"values,omitempty"`  //nolint
 	// Template field is used to specify actual go-template which is going
 	// to be used to render the object defined in Spec field
 	Template string `json:"template,omitempty"`
@@ -36,9 +37,11 @@ type Templater struct {
 // NOTE map[string]interface is not supported by controller gen
 
 // DeepCopyInto is copying the receiver, writing into out. in must be non-nil.
+//nolint
 func (in *Templater) DeepCopyInto(out *Templater) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Values = runtime.DeepCopyJSON(in.Values)
+//	out.Values = runtime.DeepCopyJSON(in.Values)
+        out.Values = in.Values
 }
