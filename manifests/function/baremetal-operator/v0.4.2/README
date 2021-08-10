@@ -1,0 +1,13 @@
+Upstream baremetal-operator doesn't have a release tag for capm3-v0.4.2.
+The capm3 v0.4.2 manifests references the master of baremetal operaotr repo
+whihc has alrady moved forward to support capm3 0.5.0.
+
+The v0.4.2 "upstream" folder in Airship repo contains the upstream manifests
+from the following commit id:
+
+git checkout 99fc4aeb
+HEAD is now at 99fc4aeb Point ironic-inspector to the ironic image in quay
+
+This is about the time when capm3 v0.4.2 was released and the last commit
+is required as it replaced the newly deprecated ironic inspector image with
+the ironic image.

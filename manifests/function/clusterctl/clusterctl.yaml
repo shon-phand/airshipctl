@@ -5,14 +5,15 @@ metadata:
     airshipit.org/deploy-k8s: "false"
   name: clusterctl_init
 init-options:
-  core-provider: "cluster-api:v0.3.7"
-  bootstrap-providers: "kubeadm:v0.3.7"
-  infrastructure-providers: "metal3:v0.4.0"
-  control-plane-providers: "kubeadm:v0.3.7"
+        #  core-provider: "cluster-api:v0.3.7"
+        #  bootstrap-providers: "kubeadm:v0.3.7"
+        #  infrastructure-providers: "metal3:v0.4.0"
+        #  control-plane-providers: "kubeadm:v0.3.7"
+  infrastructure-providers: "capm3-system/metal3:v0.4.2"
 providers:
   - name: "metal3"
     type: "InfrastructureProvider"
-    url: airshipctl/manifests/function/capm3/v0.4.0
+    url: airshipctl/manifests/function/capm3/v0.4.2
   - name: "kubeadm"
     type: "BootstrapProvider"
     url: airshipctl/manifests/function/cabpk/v0.3.7
@@ -48,13 +49,13 @@ images:
     tag: "v0.4.1"
   infrastructure-metal3/cluster-api-provider-metal3:
     repository: "quay.io/metal3-io"
-    tag: "v0.4.0"
+    tag: "v0.4.2"
   infrastructure-metal3/kube-rbac-proxy:
     repository: "gcr.io/kubebuilder"
-    tag: "v0.4.0"
+    tag: "v0.5.0"
   infrastructure-metal3/ip-address-manager:
     repository: "quay.io/metal3-io"
-    tag: "v0.4.0"
+    tag: "v0.4.1"
   infrastructure-docker/capd-manager:
     repository: "gcr.io/k8s-staging-cluster-api"
     tag: "v20201019-v0.3.10-86-gc1647481f"

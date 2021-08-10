@@ -1,0 +1,1666 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    config.kubernetes.io/path: customresourcedefinition_baremetalhosts.metal3.io.yaml
+    controller-gen.kubebuilder.io/version: v0.4.1
+  labels:
+    clusterctl.cluster.x-k8s.io: ""
+  name: baremetalhosts.metal3.io
+spec:
+  group: metal3.io
+  names:
+    kind: BareMetalHost
+    listKind: BareMetalHostList
+    plural: baremetalhosts
+    shortNames:
+    - bmh
+    - bmhost
+    singular: baremetalhost
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Operational status
+      jsonPath: .status.operationalStatus
+      name: Status
+      priority: 1
+      type: string
+    - description: Provisioning status
+      jsonPath: .status.provisioning.state
+      name: State
+      type: string
+    - description: Consumer using this host
+      jsonPath: .spec.consumerRef.name
+      name: Consumer
+      type: string
+    - description: Address of management controller
+      jsonPath: .spec.bmc.address
+      name: BMC
+      priority: 1
+      type: string
+    - description: The type of hardware detected
+      jsonPath: .status.hardwareProfile
+      name: Hardware_Profile
+      priority: 1
+      type: string
+    - description: Whether the host is online or not
+      jsonPath: .spec.online
+      name: Online
+      type: string
+    - description: Type of the most recent error
+      jsonPath: .status.errorType
+      name: Error
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: BareMetalHost is the Schema for the baremetalhosts API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: BareMetalHostSpec defines the desired state of BareMetalHost
+            properties:
+              automatedCleaningMode:
+                default: metadata
+                description: When set to disabled, automated cleaning will be avoided
+                  during provisioning and deprovisioning.
+                enum:
+                - metadata
+                - disabled
+                type: string
+              bmc:
+                description: How do we connect to the BMC?
+                properties:
+                  address:
+                    description: Address holds the URL for accessing the controller
+                      on the network.
+                    type: string
+                  credentialsName:
+                    description: The name of the secret containing the BMC credentials
+                      (requires keys "username" and "password").
+                    type: string
+                  disableCertificateVerification:
+                    description: DisableCertificateVerification disables verification
+                      of server certificates when using HTTPS to connect to the BMC.
+                      This is required when the server certificate is self-signed,
+                      but is insecure because it allows a man-in-the-middle to intercept
+                      the connection.
+                    type: boolean
+                required:
+                - address
+                - credentialsName
+                type: object
+              bootMACAddress:
+                description: Which MAC address will PXE boot? This is optional for
+                  some types, but required for libvirt VMs driven by vbmc.
+                pattern: '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}'
+                type: string
+              bootMode:
+                description: Select the method of initializing the hardware during
+                  boot. Defaults to UEFI.
+                enum:
+                - UEFI
+                - UEFISecureBoot
+                - legacy
+                type: string
+              consumerRef:
+                description: ConsumerRef can be used to store information about something
+                  that is using a host. When it is not empty, the host is considered
+                  "in use".
+                properties:
+                  apiVersion:
+                    description: API version of the referent.
+                    type: string
+                  fieldPath:
+                    description: 'If referring to a piece of an object instead of
+                      an entire object, this string should contain a valid JSON/Go
+                      field access statement, such as desiredState.manifest.containers[2].
+                      For example, if the object reference is to a container within
+                      a pod, this would take on a value like: "spec.containers{name}"
+                      (where "name" refers to the name of the container that triggered
+                      the event) or if no container name is specified "spec.containers[2]"
+                      (container with index 2 in this pod). This syntax is chosen
+                      only to have some well-defined way of referencing a part of
+                      an object. TODO: this design is not final and this field is
+                      subject to change in the future.'
+                    type: string
+                  kind:
+                    description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                    type: string
+                  namespace:
+                    description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/'
+                    type: string
+                  resourceVersion:
+                    description: 'Specific resourceVersion to which this reference
+                      is made, if any. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency'
+                    type: string
+                  uid:
+                    description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
+                    type: string
+                type: object
+              description:
+                description: Description is a human-entered text used to help identify
+                  the host
+                type: string
+              externallyProvisioned:
+                description: ExternallyProvisioned means something else is managing
+                  the image running on the host and the operator should only manage
+                  the power status and hardware inventory inspection. If the Image
+                  field is filled in, this field is ignored.
+                type: boolean
+              firmware:
+                description: firmware holds the reference for creating and consuming
+                  hardware profiles
+                properties:
+                  simultaneousMultithreadingDisabled:
+                    type: boolean
+                  sriovEnabled:
+                    type: boolean
+                  virtualizationDisabled:
+                    type: boolean
+                type: object
+              hardwareProfile:
+                description: What is the name of the hardware profile for this host?
+                  It should only be necessary to set this when inspection cannot automatically
+                  determine the profile.
+                type: string
+              image:
+                description: Image holds the details of the image to be provisioned.
+                properties:
+                  checksum:
+                    description: Checksum is the checksum for the image.
+                    type: string
+                  checksumType:
+                    description: ChecksumType is the checksum algorithm for the image.
+                      e.g md5, sha256, sha512
+                    enum:
+                    - md5
+                    - sha256
+                    - sha512
+                    type: string
+                  format:
+                    description: DiskFormat contains the format of the image (raw,
+                      qcow2, ...). Needs to be set to raw for raw images streaming.
+                      Note live-iso means an iso referenced by the url will be live-booted
+                      and not deployed to disk, and in this case the checksum options
+                      are not required and if specified will be ignored.
+                    enum:
+                    - raw
+                    - qcow2
+                    - vdi
+                    - vmdk
+                    - live-iso
+                    type: string
+                  url:
+                    description: URL is a location of an image to deploy.
+                    type: string
+                required:
+                - url
+                type: object
+              metaData:
+                description: MetaData holds the reference to the Secret containing
+                  host metadata (e.g. meta_data.json which is passed to Config Drive).
+                properties:
+                  name:
+                    description: Name is unique within a namespace to reference a
+                      secret resource.
+                    type: string
+                  namespace:
+                    description: Namespace defines the space within which the secret
+                      name must be unique.
+                    type: string
+                type: object
+              networkData:
+                description: NetworkData holds the reference to the Secret containing
+                  network configuration (e.g content of network_data.json which is
+                  passed to Config Drive).
+                properties:
+                  name:
+                    description: Name is unique within a namespace to reference a
+                      secret resource.
+                    type: string
+                  namespace:
+                    description: Namespace defines the space within which the secret
+                      name must be unique.
+                    type: string
+                type: object
+              online:
+                description: Should the server be online?
+                type: boolean
+              raid:
+                description: RAID configuration for bare metal server
+                properties:
+                  hardwareRAIDVolumes:
+                    description: The list of logical disks for hardware RAID, if rootDeviceHints
+                      isn't used, first volume is root volume.
+                    items:
+                      description: HardwareRAIDVolume defines the desired configuration
+                        of volume in hardware RAID
+                      properties:
+                        level:
+                          description: 'RAID level for the logical disk. The following
+                            levels are supported: 0;1;2;5;6;1+0;5+0;6+0.'
+                          enum:
+                          - "0"
+                          - "1"
+                          - "2"
+                          - "5"
+                          - "6"
+                          - 1+0
+                          - 5+0
+                          - 6+0
+                          type: string
+                        name:
+                          description: Name of the volume. Should be unique within
+                            the Node. If not specified, volume name will be auto-generated.
+                          maxLength: 64
+                          type: string
+                        numberOfPhysicalDisks:
+                          description: Integer, number of physical disks to use for
+                            the logical disk. Defaults to minimum number of disks
+                            required for the particular RAID level.
+                          minimum: 1
+                          type: integer
+                        rotational:
+                          description: Select disks with only rotational or solid-state
+                            storage
+                          type: boolean
+                        sizeGibibytes:
+                          description: Size (Integer) of the logical disk to be created
+                            in GiB. If unspecified or set be 0, the maximum capacity
+                            of disk will be used for logical disk.
+                          minimum: 0
+                          type: integer
+                      required:
+                      - level
+                      type: object
+                    type: array
+                  softwareRAIDVolumes:
+                    description: The list of logical disks for software RAID, if rootDeviceHints
+                      isn't used, first volume is root volume. If HardwareRAIDVolumes
+                      is set this item will be invalid. The number of created Software
+                      RAID devices must be 1 or 2. If there is only one Software RAID
+                      device, it has to be a RAID-1. If there are two, the first one
+                      has to be a RAID-1, while the RAID level for the second one
+                      can be 0, 1, or 1+0. As the first RAID device will be the deployment
+                      device, enforcing a RAID-1 reduces the risk of ending up with
+                      a non-booting node in case of a disk failure.
+                    items:
+                      description: SoftwareRAIDVolume defines the desired configuration
+                        of volume in software RAID
+                      properties:
+                        level:
+                          description: 'RAID level for the logical disk. The following
+                            levels are supported: 0;1;1+0.'
+                          enum:
+                          - "0"
+                          - "1"
+                          - 1+0
+                          type: string
+                        physicalDisks:
+                          description: A list of device hints, the number of items
+                            should be greater than or equal to 2.
+                          items:
+                            description: RootDeviceHints holds the hints for specifying
+                              the storage location for the root filesystem for the
+                              image.
+                            properties:
+                              deviceName:
+                                description: A Linux device name like "/dev/vda".
+                                  The hint must match the actual value exactly.
+                                type: string
+                              hctl:
+                                description: A SCSI bus address like 0:0:0:0. The
+                                  hint must match the actual value exactly.
+                                type: string
+                              minSizeGigabytes:
+                                description: The minimum size of the device in Gigabytes.
+                                minimum: 0
+                                type: integer
+                              model:
+                                description: A vendor-specific device identifier.
+                                  The hint can be a substring of the actual value.
+                                type: string
+                              rotational:
+                                description: True if the device should use spinning
+                                  media, false otherwise.
+                                type: boolean
+                              serialNumber:
+                                description: Device serial number. The hint must match
+                                  the actual value exactly.
+                                type: string
+                              vendor:
+                                description: The name of the vendor or manufacturer
+                                  of the device. The hint can be a substring of the
+                                  actual value.
+                                type: string
+                              wwn:
+                                description: Unique storage identifier. The hint must
+                                  match the actual value exactly.
+                                type: string
+                              wwnVendorExtension:
+                                description: Unique vendor storage identifier. The
+                                  hint must match the actual value exactly.
+                                type: string
+                              wwnWithExtension:
+                                description: Unique storage identifier with the vendor
+                                  extension appended. The hint must match the actual
+                                  value exactly.
+                                type: string
+                            type: object
+                          minItems: 2
+                          type: array
+                        sizeGibibytes:
+                          description: Size (Integer) of the logical disk to be created
+                            in GiB. If unspecified or set be 0, the maximum capacity
+                            of disk will be used for logical disk.
+                          minimum: 0
+                          type: integer
+                      required:
+                      - level
+                      type: object
+                    maxItems: 2
+                    type: array
+                type: object
+              rootDeviceHints:
+                description: Provide guidance about how to choose the device for the
+                  image being provisioned.
+                properties:
+                  deviceName:
+                    description: A Linux device name like "/dev/vda". The hint must
+                      match the actual value exactly.
+                    type: string
+                  hctl:
+                    description: A SCSI bus address like 0:0:0:0. The hint must match
+                      the actual value exactly.
+                    type: string
+                  minSizeGigabytes:
+                    description: The minimum size of the device in Gigabytes.
+                    minimum: 0
+                    type: integer
+                  model:
+                    description: A vendor-specific device identifier. The hint can
+                      be a substring of the actual value.
+                    type: string
+                  rotational:
+                    description: True if the device should use spinning media, false
+                      otherwise.
+                    type: boolean
+                  serialNumber:
+                    description: Device serial number. The hint must match the actual
+                      value exactly.
+                    type: string
+                  vendor:
+                    description: The name of the vendor or manufacturer of the device.
+                      The hint can be a substring of the actual value.
+                    type: string
+                  wwn:
+                    description: Unique storage identifier. The hint must match the
+                      actual value exactly.
+                    type: string
+                  wwnVendorExtension:
+                    description: Unique vendor storage identifier. The hint must match
+                      the actual value exactly.
+                    type: string
+                  wwnWithExtension:
+                    description: Unique storage identifier with the vendor extension
+                      appended. The hint must match the actual value exactly.
+                    type: string
+                type: object
+              taints:
+                description: Taints is the full, authoritative list of taints to apply
+                  to the corresponding Machine. This list will overwrite any modifications
+                  made to the Machine on an ongoing basis.
+                items:
+                  description: The node this Taint is attached to has the "effect"
+                    on any pod that does not tolerate the Taint.
+                  properties:
+                    effect:
+                      description: Required. The effect of the taint on pods that
+                        do not tolerate the taint. Valid effects are NoSchedule, PreferNoSchedule
+                        and NoExecute.
+                      type: string
+                    key:
+                      description: Required. The taint key to be applied to a node.
+                      type: string
+                    timeAdded:
+                      description: TimeAdded represents the time at which the taint
+                        was added. It is only written for NoExecute taints.
+                      format: date-time
+                      type: string
+                    value:
+                      description: The taint value corresponding to the taint key.
+                      type: string
+                  required:
+                  - effect
+                  - key
+                  type: object
+                type: array
+              userData:
+                description: UserData holds the reference to the Secret containing
+                  the user data to be passed to the host before it boots.
+                properties:
+                  name:
+                    description: Name is unique within a namespace to reference a
+                      secret resource.
+                    type: string
+                  namespace:
+                    description: Namespace defines the space within which the secret
+                      name must be unique.
+                    type: string
+                type: object
+            required:
+            - online
+            type: object
+          status:
+            description: BareMetalHostStatus defines the observed state of BareMetalHost
+            properties:
+              errorCount:
+                default: 0
+                description: ErrorCount records how many times the host has encoutered
+                  an error since the last successful operation
+                type: integer
+              errorMessage:
+                description: the last error message reported by the provisioning subsystem
+                type: string
+              errorType:
+                description: ErrorType indicates the type of failure encountered when
+                  the OperationalStatus is OperationalStatusError
+                enum:
+                - provisioned registration error
+                - registration error
+                - inspection error
+                - preparation error
+                - provisioning error
+                - power management error
+                type: string
+              goodCredentials:
+                description: the last credentials we were able to validate as working
+                properties:
+                  credentials:
+                    description: SecretReference represents a Secret Reference. It
+                      has enough information to retrieve secret in any namespace
+                    properties:
+                      name:
+                        description: Name is unique within a namespace to reference
+                          a secret resource.
+                        type: string
+                      namespace:
+                        description: Namespace defines the space within which the
+                          secret name must be unique.
+                        type: string
+                    type: object
+                  credentialsVersion:
+                    type: string
+                type: object
+              hardware:
+                description: The hardware discovered to exist on the host.
+                properties:
+                  cpu:
+                    description: CPU describes one processor on the host.
+                    properties:
+                      arch:
+                        type: string
+                      clockMegahertz:
+                        description: ClockSpeed is a clock speed in MHz
+                        format: double
+                        type: number
+                      count:
+                        type: integer
+                      flags:
+                        items:
+                          type: string
+                        type: array
+                      model:
+                        type: string
+                    type: object
+                  firmware:
+                    description: Firmware describes the firmware on the host.
+                    properties:
+                      bios:
+                        description: The BIOS for this firmware
+                        properties:
+                          date:
+                            description: The release/build date for this BIOS
+                            type: string
+                          vendor:
+                            description: The vendor name for this BIOS
+                            type: string
+                          version:
+                            description: The version of the BIOS
+                            type: string
+                        type: object
+                    type: object
+                  hostname:
+                    type: string
+                  nics:
+                    items:
+                      description: NIC describes one network interface on the host.
+                      properties:
+                        ip:
+                          description: The IP address of the interface. This will
+                            be an IPv4 or IPv6 address if one is present.  If both
+                            IPv4 and IPv6 addresses are present in a dual-stack environment,
+                            two nics will be output, one with each IP.
+                          type: string
+                        mac:
+                          description: The device MAC address
+                          pattern: '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}'
+                          type: string
+                        model:
+                          description: The vendor and product IDs of the NIC, e.g.
+                            "0x8086 0x1572"
+                          type: string
+                        name:
+                          description: The name of the network interface, e.g. "en0"
+                          type: string
+                        pxe:
+                          description: Whether the NIC is PXE Bootable
+                          type: boolean
+                        speedGbps:
+                          description: The speed of the device in Gigabits per second
+                          type: integer
+                        vlanId:
+                          description: The untagged VLAN ID
+                          format: int32
+                          maximum: 4094
+                          minimum: 0
+                          type: integer
+                        vlans:
+                          description: The VLANs available
+                          items:
+                            description: VLAN represents the name and ID of a VLAN
+                            properties:
+                              id:
+                                description: VLANID is a 12-bit 802.1Q VLAN identifier
+                                format: int32
+                                maximum: 4094
+                                minimum: 0
+                                type: integer
+                              name:
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                  ramMebibytes:
+                    type: integer
+                  storage:
+                    items:
+                      description: Storage describes one storage device (disk, SSD,
+                        etc.) on the host.
+                      properties:
+                        hctl:
+                          description: The SCSI location of the device
+                          type: string
+                        model:
+                          description: Hardware model
+                          type: string
+                        name:
+                          description: The Linux device name of the disk, e.g. "/dev/sda".
+                            Note that this may not be stable across reboots.
+                          type: string
+                        rotational:
+                          description: Whether this disk represents rotational storage
+                          type: boolean
+                        serialNumber:
+                          description: The serial number of the device
+                          type: string
+                        sizeBytes:
+                          description: The size of the disk in Bytes
+                          format: int64
+                          type: integer
+                        vendor:
+                          description: The name of the vendor of the device
+                          type: string
+                        wwn:
+                          description: The WWN of the device
+                          type: string
+                        wwnVendorExtension:
+                          description: The WWN Vendor extension of the device
+                          type: string
+                        wwnWithExtension:
+                          description: The WWN with the extension
+                          type: string
+                      type: object
+                    type: array
+                  systemVendor:
+                    description: HardwareSystemVendor stores details about the whole
+                      hardware system.
+                    properties:
+                      manufacturer:
+                        type: string
+                      productName:
+                        type: string
+                      serialNumber:
+                        type: string
+                    type: object
+                type: object
+              hardwareProfile:
+                description: The name of the profile matching the hardware details.
+                type: string
+              lastUpdated:
+                description: LastUpdated identifies when this status was last observed.
+                format: date-time
+                type: string
+              operationHistory:
+                description: OperationHistory holds information about operations performed
+                  on this host.
+                properties:
+                  deprovision:
+                    description: OperationMetric contains metadata about an operation
+                      (inspection, provisioning, etc.) used for tracking metrics.
+                    properties:
+                      end:
+                        format: date-time
+                        nullable: true
+                        type: string
+                      start:
+                        format: date-time
+                        nullable: true
+                        type: string
+                    type: object
+                  inspect:
+                    description: OperationMetric contains metadata about an operation
+                      (inspection, provisioning, etc.) used for tracking metrics.
+                    properties:
+                      end:
+                        format: date-time
+                        nullable: true
+                        type: string
+                      start:
+                        format: date-time
+                        nullable: true
+                        type: string
+                    type: object
+                  provision:
+                    description: OperationMetric contains metadata about an operation
+                      (inspection, provisioning, etc.) used for tracking metrics.
+                    properties:
+                      end:
+                        format: date-time
+                        nullable: true
+                        type: string
+                      start:
+                        format: date-time
+                        nullable: true
+                        type: string
+                    type: object
+                  register:
+                    description: OperationMetric contains metadata about an operation
+                      (inspection, provisioning, etc.) used for tracking metrics.
+                    properties:
+                      end:
+                        format: date-time
+                        nullable: true
+                        type: string
+                      start:
+                        format: date-time
+                        nullable: true
+                        type: string
+                    type: object
+                type: object
+              operationalStatus:
+                description: OperationalStatus holds the status of the host
+                enum:
+                - ""
+                - OK
+                - discovered
+                - error
+                - delayed
+                - detached
+                type: string
+              poweredOn:
+                description: indicator for whether or not the host is powered on
+                type: boolean
+              provisioning:
+                description: Information tracked by the provisioner.
+                properties:
+                  ID:
+                    description: The machine's UUID from the underlying provisioning
+                      tool
+                    type: string
+                  bootMode:
+                    description: BootMode indicates the boot mode used to provision
+                      the node
+                    enum:
+                    - UEFI
+                    - UEFISecureBoot
+                    - legacy
+                    type: string
+                  image:
+                    description: Image holds the details of the last image successfully
+                      provisioned to the host.
+                    properties:
+                      checksum:
+                        description: Checksum is the checksum for the image.
+                        type: string
+                      checksumType:
+                        description: ChecksumType is the checksum algorithm for the
+                          image. e.g md5, sha256, sha512
+                        enum:
+                        - md5
+                        - sha256
+                        - sha512
+                        type: string
+                      format:
+                        description: DiskFormat contains the format of the image (raw,
+                          qcow2, ...). Needs to be set to raw for raw images streaming.
+                          Note live-iso means an iso referenced by the url will be
+                          live-booted and not deployed to disk, and in this case the
+                          checksum options are not required and if specified will
+                          be ignored.
+                        enum:
+                        - raw
+                        - qcow2
+                        - vdi
+                        - vmdk
+                        - live-iso
+                        type: string
+                      url:
+                        description: URL is a location of an image to deploy.
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  raid:
+                    description: The Raid set by the user
+                    properties:
+                      hardwareRAIDVolumes:
+                        description: The list of logical disks for hardware RAID,
+                          if rootDeviceHints isn't used, first volume is root volume.
+                        items:
+                          description: HardwareRAIDVolume defines the desired configuration
+                            of volume in hardware RAID
+                          properties:
+                            level:
+                              description: 'RAID level for the logical disk. The following
+                                levels are supported: 0;1;2;5;6;1+0;5+0;6+0.'
+                              enum:
+                              - "0"
+                              - "1"
+                              - "2"
+                              - "5"
+                              - "6"
+                              - 1+0
+                              - 5+0
+                              - 6+0
+                              type: string
+                            name:
+                              description: Name of the volume. Should be unique within
+                                the Node. If not specified, volume name will be auto-generated.
+                              maxLength: 64
+                              type: string
+                            numberOfPhysicalDisks:
+                              description: Integer, number of physical disks to use
+                                for the logical disk. Defaults to minimum number of
+                                disks required for the particular RAID level.
+                              minimum: 1
+                              type: integer
+                            rotational:
+                              description: Select disks with only rotational or solid-state
+                                storage
+                              type: boolean
+                            sizeGibibytes:
+                              description: Size (Integer) of the logical disk to be
+                                created in GiB. If unspecified or set be 0, the maximum
+                                capacity of disk will be used for logical disk.
+                              minimum: 0
+                              type: integer
+                          required:
+                          - level
+                          type: object
+                        type: array
+                      softwareRAIDVolumes:
+                        description: The list of logical disks for software RAID,
+                          if rootDeviceHints isn't used, first volume is root volume.
+                          If HardwareRAIDVolumes is set this item will be invalid.
+                          The number of created Software RAID devices must be 1 or
+                          2. If there is only one Software RAID device, it has to
+                          be a RAID-1. If there are two, the first one has to be a
+                          RAID-1, while the RAID level for the second one can be 0,
+                          1, or 1+0. As the first RAID device will be the deployment
+                          device, enforcing a RAID-1 reduces the risk of ending up
+                          with a non-booting node in case of a disk failure.
+                        items:
+                          description: SoftwareRAIDVolume defines the desired configuration
+                            of volume in software RAID
+                          properties:
+                            level:
+                              description: 'RAID level for the logical disk. The following
+                                levels are supported: 0;1;1+0.'
+                              enum:
+                              - "0"
+                              - "1"
+                              - 1+0
+                              type: string
+                            physicalDisks:
+                              description: A list of device hints, the number of items
+                                should be greater than or equal to 2.
+                              items:
+                                description: RootDeviceHints holds the hints for specifying
+                                  the storage location for the root filesystem for
+                                  the image.
+                                properties:
+                                  deviceName:
+                                    description: A Linux device name like "/dev/vda".
+                                      The hint must match the actual value exactly.
+                                    type: string
+                                  hctl:
+                                    description: A SCSI bus address like 0:0:0:0.
+                                      The hint must match the actual value exactly.
+                                    type: string
+                                  minSizeGigabytes:
+                                    description: The minimum size of the device in
+                                      Gigabytes.
+                                    minimum: 0
+                                    type: integer
+                                  model:
+                                    description: A vendor-specific device identifier.
+                                      The hint can be a substring of the actual value.
+                                    type: string
+                                  rotational:
+                                    description: True if the device should use spinning
+                                      media, false otherwise.
+                                    type: boolean
+                                  serialNumber:
+                                    description: Device serial number. The hint must
+                                      match the actual value exactly.
+                                    type: string
+                                  vendor:
+                                    description: The name of the vendor or manufacturer
+                                      of the device. The hint can be a substring of
+                                      the actual value.
+                                    type: string
+                                  wwn:
+                                    description: Unique storage identifier. The hint
+                                      must match the actual value exactly.
+                                    type: string
+                                  wwnVendorExtension:
+                                    description: Unique vendor storage identifier.
+                                      The hint must match the actual value exactly.
+                                    type: string
+                                  wwnWithExtension:
+                                    description: Unique storage identifier with the
+                                      vendor extension appended. The hint must match
+                                      the actual value exactly.
+                                    type: string
+                                type: object
+                              minItems: 2
+                              type: array
+                            sizeGibibytes:
+                              description: Size (Integer) of the logical disk to be
+                                created in GiB. If unspecified or set be 0, the maximum
+                                capacity of disk will be used for logical disk.
+                              minimum: 0
+                              type: integer
+                          required:
+                          - level
+                          type: object
+                        maxItems: 2
+                        type: array
+                    type: object
+                  rootDeviceHints:
+                    description: The RootDevicehints set by the user
+                    properties:
+                      deviceName:
+                        description: A Linux device name like "/dev/vda". The hint
+                          must match the actual value exactly.
+                        type: string
+                      hctl:
+                        description: A SCSI bus address like 0:0:0:0. The hint must
+                          match the actual value exactly.
+                        type: string
+                      minSizeGigabytes:
+                        description: The minimum size of the device in Gigabytes.
+                        minimum: 0
+                        type: integer
+                      model:
+                        description: A vendor-specific device identifier. The hint
+                          can be a substring of the actual value.
+                        type: string
+                      rotational:
+                        description: True if the device should use spinning media,
+                          false otherwise.
+                        type: boolean
+                      serialNumber:
+                        description: Device serial number. The hint must match the
+                          actual value exactly.
+                        type: string
+                      vendor:
+                        description: The name of the vendor or manufacturer of the
+                          device. The hint can be a substring of the actual value.
+                        type: string
+                      wwn:
+                        description: Unique storage identifier. The hint must match
+                          the actual value exactly.
+                        type: string
+                      wwnVendorExtension:
+                        description: Unique vendor storage identifier. The hint must
+                          match the actual value exactly.
+                        type: string
+                      wwnWithExtension:
+                        description: Unique storage identifier with the vendor extension
+                          appended. The hint must match the actual value exactly.
+                        type: string
+                    type: object
+                  state:
+                    description: An indiciator for what the provisioner is doing with
+                      the host.
+                    type: string
+                required:
+                - ID
+                - state
+                type: object
+              triedCredentials:
+                description: the last credentials we sent to the provisioning backend
+                properties:
+                  credentials:
+                    description: SecretReference represents a Secret Reference. It
+                      has enough information to retrieve secret in any namespace
+                    properties:
+                      name:
+                        description: Name is unique within a namespace to reference
+                          a secret resource.
+                        type: string
+                      namespace:
+                        description: Namespace defines the space within which the
+                          secret name must be unique.
+                        type: string
+                    type: object
+                  credentialsVersion:
+                    type: string
+                type: object
+            required:
+            - errorCount
+            - errorMessage
+            - hardwareProfile
+            - operationalStatus
+            - poweredOn
+            - provisioning
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3/role_leader-election-role.yaml
+  name: leader-election-role
+  namespace: metal3
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterrole_manager-role.yaml
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - metal3.io
+  resources:
+  - baremetalhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metal3.io
+  resources:
+  - baremetalhosts/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterrole_proxy-role.yaml
+  name: proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterrole_metrics-reader.yaml
+  name: metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3/rolebinding_leader-election-rolebinding.yaml
+  name: leader-election-rolebinding
+  namespace: metal3
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: metal3-baremetal-operator
+  namespace: metal3
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterrolebinding_manager-rolebinding.yaml
+  name: manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: manager-role
+subjects:
+- kind: ServiceAccount
+  name: metal3-baremetal-operator
+  namespace: metal3
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  annotations:
+    config.kubernetes.io/path: clusterrolebinding_proxy-rolebinding.yaml
+  name: proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: proxy-role
+subjects:
+- kind: ServiceAccount
+  name: metal3-baremetal-operator
+  namespace: metal3
+---
+apiVersion: v1
+data:
+  DEPLOY_KERNEL_URL: http://10.23.24.102:/images/ironic-python-agent.kernel
+  DEPLOY_RAMDISK_URL: http://10.23.24.102:/images/ironic-python-agent.initramfs
+  DHCP_RANGE: 172.22.0.10,172.22.0.100
+  HTTP_PORT: ""
+  HTTP_PROXY: ""
+  HTTPS_PROXY: ""
+  IRONIC_ENDPOINT: http://10.23.24.102:6385/v1/
+  IRONIC_FAST_TRACK: ""
+  IRONIC_INSPECTOR_ENDPOINT: http://10.23.24.102:5050/v1/
+  NO_PROXY: ""
+  PROVISIONING_INTERFACE: pxe
+  PROVISIONING_IP: 10.23.24.102
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+kind: ConfigMap
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3/configmap_ironic.yaml
+  name: ironic
+  namespace: metal3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3/service_controller-manager-metrics-service.yaml
+  labels:
+    control-plane: controller-manager
+  name: controller-manager-metrics-service
+  namespace: metal3
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    config.kubernetes.io/path: metal3/deployment_baremetal-operator.yaml
+  labels:
+    control-plane: controller-manager
+  name: baremetal-operator
+  namespace: metal3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8085/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.5.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --metrics-addr=127.0.0.1:8085
+        - --enable-leader-election
+        command:
+        - /baremetal-operator
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        envFrom:
+        - configMapRef:
+            name: ironic
+        image: quay.io/metal3-io/baremetal-operator:capm3-v0.4.2
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9440
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        name: manager
+      nodeSelector:
+        kubernetes.io/os: linux
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+---
+apiVersion: airshipit.org/v1alpha1
+kind: NetworkCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: networkcatalogue_networking.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: networking
+spec:
+  commonHostNetworking:
+    links:
+    - id: oam
+      mtu: "1500"
+      name: oam
+      type: phy
+    - id: pxe
+      mtu: "1500"
+      name: pxe
+      type: phy
+    networks:
+    - id: oam-ipv4
+      link: oam
+      netmask: 255.255.255.0
+      routes:
+      - gateway: 10.23.25.1
+        netmask: 0.0.0.0
+        network: 0.0.0.0
+      type: ipv4
+    - id: pxe-ipv4
+      link: pxe
+      netmask: 255.255.255.0
+      type: ipv4
+    services:
+    - address: 8.8.8.8
+      type: dns
+    - address: 8.8.4.4
+      type: dns
+  ironic:
+    deployKernelUrl: ""
+    deployRamdiskUrl: ""
+    dhcpRange: 10.23.24.200,10.23.24.250
+    httpPort: ""
+    ironicAutomatedClean: ""
+    ironicEndpoint: ""
+    ironicFastTrack: ""
+    ironicInspectorEndpoint: ""
+    provisioningInterface: pxe
+    provisioningIp: 10.23.24.102
+  kubernetes:
+    apiserverCertSANs: '[10.23.25.102, 10.23.24.102]'
+    controlPlaneEndpoint:
+      host: 10.23.25.102
+      port: 6443
+    podCidr: 192.168.0.0/18
+    serviceCidr: 10.96.0.0/12
+  ntp:
+    servers:
+    - 0.pool.ntp.org
+    - 1.pool.ntp.org
+    - 2.pool.ntp.org
+    - 3.pool.ntp.org
+---
+apiVersion: airshipit.org/v1alpha1
+env:
+  HTTP_PROXY: ""
+  HTTPS_PROXY: ""
+  NO_PROXY: ""
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+kind: VariableCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: variablecatalogue_env-vars-catalogue.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: env-vars-catalogue
+---
+apiVersion: airshipit.org/v1alpha1
+ephemeralClusterCa:
+  crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvekNDQWVlZ0F3SUJBZ0lSQU0vdkhUa29kUHRzN2ZiUWdzdTRiK0V3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXlXaGNOTXpFdwpNekV3TURVME16UXlXakFaTVJjd0ZRWURWUVFERXc1TGRXSmxjbTVsZEdWeklFRlFTVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTks1YUFoK25pTUVsaytHSlF1WDZqV1ZTY0pWWUNyYjRGRW0Ka0RETnNCSjBCS3Rxa0ZGUC85NVcvSDd6TGhJYnUyUzNwOGxEaGNJZmlDYm8zSzhvZURnbHdMSFlMUnAwUkhhdQpPQ1k5NlFWYnRhak04ZW1xMzQ2VDlUWjdnQlBORm9Fa0FOSVdCL1l1bzBuSjJoSUlTb3VLVjZFeWlxQkYydTVoClhGRzlubjQyU3p6Qndsa1IvTWhwV2hNUGFGMTNEYXA2UnlVb3hBRWJSMFg0RDZSaVBaUU8zUnM0dmtva0pSemYKQ09lbW1lelRQZDRGSmFwdjlnZzNNYTNiTEVnNlNVdWVhUWhkU2hUWUdPT2ZFQy9jU1ZTcHdDZzRSa3lNOUIwQQpuZEZnSERTZTI4UW1VUGU3TElldDNsMTl1eFgwaVJCS1hFdGhGQmM1U2RBbkhHckR6WWNDQXdFQUFhTkNNRUF3CkRnWURWUjBQQVFIL0JBUURBZ0trTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVAKQmdOVkhSTUJBZjhFQlRBREFRSC9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNPMllFSHpXVW81OFFTVnBlZgp3RHNYSFl0T2EzaU9KV0Vkc01xVnJ3YitDd2dFZXNOUXhsdUorTng2RGNDKzVFK1NpR2Y5c1lwZ3RmR3ZKc3I4CnRmdXlnMFdycE5ZMVpGNExmYndhNjN6WGx2aWh4c0JDUVJ0enZWdzVnekx0dHBpN09yS3VUTHRTdy9odXh0U1AKTUFDRmNFQ25tS3V0WnhETDZCeUczMUZldUlEYTBLUTdPdVBaLzB2bkpYTGVXaG5wVWM2UTM1a3BiamNhYytmbQo0R2ZJa0FHNFI2TUFRdkNKM2ZmRlM0dVhPSjJ2WGRYNmRaV05rQ3NDWjhaMldzN2VISU1JNUp2VHRmYTd4K1dxCjdkY3MwcFhzZ1JTdWcvNkJ4d2NCa0xVbHF1dHoxNHAwdkdEVnhGOTd6L1NPckRGWHVCM2RtdjlwUTlGQzNDck4KSnJOTgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBMHJsb0NINmVJd1NXVDRZbEM1ZnFOWlZKd2xWZ0t0dmdVU2FRTU0yd0VuUUVxMnFRClVVLy8zbGI4ZnZNdUVodTdaTGVueVVPRndoK0lKdWpjcnloNE9DWEFzZGd0R25SRWRxNDRKajNwQlZ1MXFNengKNmFyZmpwUDFObnVBRTgwV2dTUUEwaFlIOWk2alNjbmFFZ2hLaTRwWG9US0tvRVhhN21GY1ViMmVmalpMUE1IQwpXUkg4eUdsYUV3OW9YWGNOcW5wSEpTakVBUnRIUmZnUHBHSTlsQTdkR3ppK1NpUWxITjhJNTZhWjdOTTkzZ1VsCnFtLzJDRGN4cmRzc1NEcEpTNTVwQ0YxS0ZOZ1k0NThRTDl4SlZLbkFLRGhHVEl6MEhRQ2QwV0FjTko3YnhDWlEKOTdzc2g2M2VYWDI3RmZTSkVFcGNTMkVVRnpsSjBDY2Nhc1BOaHdJREFRQUJBb0lCQUFjSFhDcjhYalg0enpLegozTVI0T3IyeXp4VUdXQURWK0xOOFA4OEE3V0NRTWgrdG5FYTZEbVRTTGZYbUVxRlQvM29xamhRdWhtV2xPNXRnCnBRdktvOGZycW5QRUxDejN0OWpsa3NYanhzUUEvUncyU2ROcmVhMTl6ZTRWVEg1Y2x1V1QxOXNxRlBYbk5GY2YKdm9CZmVtMFJIajhvT211Q0tQMU9qZy9EN1dkMFJLc2JiRHFXWHU1Z2dTM0c3VUVmbkEzS0R1SFAvcXBQak5NVgpvY3Jld3NHaWNTSFZ0KzE1em53MW1FR0J3Q0lxN3c0M0pUdnlDbDMydGlOQ0QwQnRpVndYQVNzNHJDNU8rdkRrCmtkNVZrYW1jNjFNTTUzR1NRc2tCdWFJaUYrWWR1N2w0RTJBR2hwcWlGbDRtQlZEdlRFOEk4NEVadndIUUlnangKMWlZTExNRUNnWUVBNi9EVVhScnBCMThzeG13dDNiZEtFbnE3RDN6amNtVmVNNGtKNGdMZSt0R3dTOEFsR2pJdgpFUERQZktNaFNkbmF0am9xcjR1MTJPVDdwRzVnLy8raHpRZkFIRFo1T2xGcm5xb1Q3dnVsVjFLVDJPOEZITmdnCjYzcWUrNUhMb3VUdjNNeDR6dWhLODdPcDdpaklTcndDUSt6M1FPUExkNGIxTVAvOTdhczg1RkVDZ1lFQTVLTy8Ka1FwVDRIcG1qY054ZHZnTS9WMW9Bb0ZKdG9VNmZCL3pkbW53Tnp4OW9RUVZFdmtTWEU4dkhPS2Q4cUY4QkZmeAplcTAzWWpzN0VrbUdodDVuRnlCMWRSUXhiR1lSc0ZnTWtCNEhvanhXY0FLWnNRTGNhcCtDMFZlOGhYZFBPRFhFCjFMb3gyS25HZEw3YUNoN2FBQUUzTEFjc3ExN3lYMnV5VG1HdlZsY0NnWUJDeDA0RDhCcm1lRHlmQ0gxTzFKTEYKZWpFNXAvcGtKV2F0Sld0RHFkWmNuVDdOb2R1ZWQzZTB6c09iSGp6TXZ6bFUvRStha2V0dE1SbzhKdldUWDFIMwpTdXRIME84czMyQ2JicjNubFJmdUNEUktZUlJNWHF1cW1uRW0rTlB2RGVjSjBtR2JCa280Z2JCbDlPc0RwQVRzCkhzUzRmQURabXJ3SkcxdE9pbm5Za1FLQmdRQ0Q2a1k0dExDNEwyYkVIQ04yOUo3cC85NW1zNW1JQ1U0NUYyWXMKeCtxa3MrMzMzSmNjSDBDTXFkTVE0MThtQWkyL2c4MzdiYjBxbStuMUh4N1M2YmFwRFQwM2s3TUFTOU9nM3V4QQpxbExWTStMYk5XVGZVRHREK1V4TTVFWU02MDExclBBbm5GWHVIK1kwclhpM3BoMDVLM3BkbUxZWkdlclZTeG5SClIyTVdlUUtCZ0JrNHIxc3h1VmtMdUh2OEI0MCtySjlHV0Ewdlc2UzUxWHBNNVkySjBwMVU4cUl1ZFh2RzBzTXYKb1ROdzA5KzIwbTcyQytuQk1VdDhzNkttc3E3SktJQ3ErMmVGeURIMlNXaGZMenBMUG1BN0Z3dWFOem5LbEd3egpsRWhGWnhxQkpMUXRuQlJWQ3d2eC9RdllBQUxZd3Z3cDhSbDVGOUdyenQ2M0t5SnUwb3BXCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+ephemeralKubeconfig:
+  certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvekNDQWVlZ0F3SUJBZ0lSQU0vdkhUa29kUHRzN2ZiUWdzdTRiK0V3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXlXaGNOTXpFdwpNekV3TURVME16UXlXakFaTVJjd0ZRWURWUVFERXc1TGRXSmxjbTVsZEdWeklFRlFTVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTks1YUFoK25pTUVsaytHSlF1WDZqV1ZTY0pWWUNyYjRGRW0Ka0RETnNCSjBCS3Rxa0ZGUC85NVcvSDd6TGhJYnUyUzNwOGxEaGNJZmlDYm8zSzhvZURnbHdMSFlMUnAwUkhhdQpPQ1k5NlFWYnRhak04ZW1xMzQ2VDlUWjdnQlBORm9Fa0FOSVdCL1l1bzBuSjJoSUlTb3VLVjZFeWlxQkYydTVoClhGRzlubjQyU3p6Qndsa1IvTWhwV2hNUGFGMTNEYXA2UnlVb3hBRWJSMFg0RDZSaVBaUU8zUnM0dmtva0pSemYKQ09lbW1lelRQZDRGSmFwdjlnZzNNYTNiTEVnNlNVdWVhUWhkU2hUWUdPT2ZFQy9jU1ZTcHdDZzRSa3lNOUIwQQpuZEZnSERTZTI4UW1VUGU3TElldDNsMTl1eFgwaVJCS1hFdGhGQmM1U2RBbkhHckR6WWNDQXdFQUFhTkNNRUF3CkRnWURWUjBQQVFIL0JBUURBZ0trTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVAKQmdOVkhSTUJBZjhFQlRBREFRSC9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUNPMllFSHpXVW81OFFTVnBlZgp3RHNYSFl0T2EzaU9KV0Vkc01xVnJ3YitDd2dFZXNOUXhsdUorTng2RGNDKzVFK1NpR2Y5c1lwZ3RmR3ZKc3I4CnRmdXlnMFdycE5ZMVpGNExmYndhNjN6WGx2aWh4c0JDUVJ0enZWdzVnekx0dHBpN09yS3VUTHRTdy9odXh0U1AKTUFDRmNFQ25tS3V0WnhETDZCeUczMUZldUlEYTBLUTdPdVBaLzB2bkpYTGVXaG5wVWM2UTM1a3BiamNhYytmbQo0R2ZJa0FHNFI2TUFRdkNKM2ZmRlM0dVhPSjJ2WGRYNmRaV05rQ3NDWjhaMldzN2VISU1JNUp2VHRmYTd4K1dxCjdkY3MwcFhzZ1JTdWcvNkJ4d2NCa0xVbHF1dHoxNHAwdkdEVnhGOTd6L1NPckRGWHVCM2RtdjlwUTlGQzNDck4KSnJOTgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lSQU9zcjh5SlF5MEJvZTBzNUprWk93VkV3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXlXaGNOTWpJdwpNekV5TURVME16UXlXakFwTVJjd0ZRWURWUVFLRXc1emVYTjBaVzA2YldGemRHVnljekVPTUF3R0ExVUVBeE1GCllXUnRhVzR3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRRGIwOEs5ZUR5U2dWanYKZ3NCaDlvZDFjdXZCVVRZS2NrdFZFaVU5OGs5amEwTTh6VkMzTkZFYVRaRjB1elFmK3BXZm5tK0t2cTNvWjBkWQpWVnV4eXdyQkZ3dDlTRlpmZStJTkNqcEtxYjlGcVZDaHVDd043cS9GbDVmMDZlSUVtalo5RUM0b3pRTlRPakNhCkVLMmgzZUJQVXB5ZVZaeHQrc2c3Q1IrenhPakE0c0lZMGs0MjNyclpWUUx4VXBvUXk0VUxTOFRERGVjdm85VlAKNVo3SUt5amdNR2xlc2FHdDRZOWcvQUxDTzlJcGpjd3BOQmZsTnk2Qm5oUU9qSUFNQktZenpjZERBT2Y1SG9mcwowN1EzTzh3REZ6WkVFZ2dNc0FzZnZSKzlTVHFudEhLQmxoYXgyZ2tPV3JSYTRiSGd4U2hSalJoM0ViZDBZbW05CjBXYmZmMDFOQWdNQkFBR2pQekE5TUE0R0ExVWREd0VCL3dRRUF3SUZvREFkQmdOVkhTVUVGakFVQmdnckJnRUYKQlFjREFRWUlLd1lCQlFVSEF3SXdEQVlEVlIwVEFRSC9CQUl3QURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpKaGh6dVllU3pTaUhRWGxjZ1U0VnBkcFc5SHVvY3Y0cDNkTjVKUFZZTWV3ajFPYjdsbWVIQS90aWs4TE9OcTl4CmU0NmtYTXcvODhzSFlTVlRYSVgwc0JTM3hyV3dBL2VtQS9DcWJqdllnNmhlMytzVG5ubCtwRitXZERmUW9qSjYKUlBVc2ZQcHN3YzA3ZXVDSUNFTzZsaHhsdmVaSndvT0ZTNXY4ZEcwYVdDVzhzL1BtMXBZTG5SN1ltTlZ4SHMycApaRk1kWEd4aWo5bDgwbkVvdkZoNkxreTRvY0FSRmNiU0xKOVFwNGNVSUQremhGZmF4WmZOUWlKYzl1a3QyQlhuCjM4dmxBb1lkUjB1a0N2WnZtdzA4MG5ac2FjOWV6ZXdOZWlIVWVQYmptV3NBSzRISTg2dng3MjJ3VlkwclZ4RXYKblJiaHNNRjhqUktxRktlZ216dXQvQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMjlQQ3ZYZzhrb0ZZNzRMQVlmYUhkWExyd1ZFMkNuSkxWUklsUGZKUFkydERQTTFRCnR6UlJHazJSZExzMEgvcVZuNTV2aXI2dDZHZEhXRlZic2NzS3dSY0xmVWhXWDN2aURRbzZTcW0vUmFsUW9iZ3MKRGU2dnhaZVg5T25pQkpvMmZSQXVLTTBEVXpvd21oQ3RvZDNnVDFLY25sV2NiZnJJT3drZnM4VG93T0xDR05KTwpOdDY2MlZVQzhWS2FFTXVGQzB2RXd3M25MNlBWVCtXZXlDc280REJwWHJHaHJlR1BZUHdDd2p2U0tZM01LVFFYCjVUY3VnWjRVRG95QURBU21NODNIUXdEbitSNkg3Tk8wTnp2TUF4YzJSQklJRExBTEg3MGZ2VWs2cDdSeWdaWVcKc2RvSkRscTBXdUd4NE1Vb1VZMFlkeEczZEdKcHZkRm0zMzlOVFFJREFRQUJBb0lCQUdsR3Z1cXlYSC9sUmt4ZQpGL2hTY29rQzRua1FoWXIzTmJDbUlnUEt1YzVwSGloT1E2dVplSVhhUkNEZFRwZEtFTUlDeEhSejRTRjk1S01mCkxleTF5bzZ5bEtRSk1xUkQxZnhjdTVIcVBWb0ZQa0pVeTNSWXJRRTZHbUlHYUdHLzRQeC85VHRCQTZpbUk0U0YKSEVKNjJlUGpNbko1bVpMcUdWNThmaHcvM3lBUUZaL2pvU25vZFB5OHYrLzJOZWRYaFdtdkFzOEc3NDRBc2FSQgpVLzk5TVFiMTI1bjVBa005STR3Y2RMNUlZVVVoYXNSL0hlVWNlSWdaTWIxSTZYcVZ5MVhuQkd4Tm5wMXl6TmR5CmlWZkhuYUI2c0J4eGRlSzd6TTgyTHhIdlBwZUtrTEcvQmZsd29KNkR2bDFPV3JEMGdFQWJRWUcxWFhiYjZDa3MKdytFZVJJRUNnWUVBN0g5ZnE4KzdEY0EzbHBscEFkVE9SOENvYzdmcEMxWU1Gc2JhYy9YNDQzY2w1aGo2L3BRZApkL1o0V1lJMERqeC8ra21QZ094OVBwbVBucE5MYlJoZzN3WGtJY0NJOHl2ZWtSc3JDYzJMai9IbW82ZEZuTHBYCllLa1hvb2N0NitXSW53anQ2ZTZHV2kyTkVUZFdoekY3MHZDNHpVR3lITmJuQnB0S3ZvcHVMRjBDZ1lFQTdmUjIKMFhnOURVbEJ1dis1SVR3UEpSc1pNTG9tNk5QVkRTd3VuUVdTbUdDRXVhbElkUWZiODNPMi9iN1dwb2l3MWlYNApJQno0aUhZSDR0Y0dua2tDK3p5VFFBeGNzSkp5UFF0aEhFSThXaFVSMVkxRm8zUUFyV0FQcHQreHNXV1YzLzlHCkwxWXdIc3JYenpWQThVMGE1Wmk0dm9pWVpYTUNEeUZnWlJ0N0ZiRUNnWUVBalRPTGtwQm5sVkV6bjFZZkRQbmEKNDVwU3VTeVFGcldjYUNqNEd3NDhPTXRWdEdrcnlyM3lUa0s1SG5BUDFvUW13UEFVbnh3VHQwR0dMMTZ3UlFXdQpLTnBpbUFoVmZDS3dNeUR1ZEY3bHVkN3JIc0RyWGlVZnNGV2xCK1AvOWYxSXNmTnA0U2NKem1PdCt4NTRLaVhRClVXUnFZaHFjVm4yMDJBdjE5NGU5T2YwQ2dZQTlMK050c1pGaFhUajlzTXdWODYraFJ2cVBRUTdJUjlBODl1TjEKbFAxQkdYQ0huVFA0Zy9EWEJTWkUwVkc0dU9WZjY1dUdCbTBTQ2VlMU9MMkc3aGRLS3lWaURzdTJ5N0Y4YVBTcgpvNHlKVFdtc2xBc1lJTGdiM051cGVWUGozYzlRTGdBS0pBdHpuNDBteHZiUUZaZVkrbEJuRGhEQjVYVGVGeU1HClhLNmx3UUtCZ1FDSWtYdzRQTUFaak9EQVY5ckNiVkJNUzJnaUNOUE5iL0p0MXkrRVFuREFzYXhiVTJIM0VRaHUKODRyNG5nUjNackF4REVlOUg1OHZXSE9kdU9XLzlNOHRVMm9CeWlidFpSbFNGb2dLQ3k3V0dhQnhGU3ZRNDJ5MQpBK3l2cU1JMUJLN0xRZzVqSzNiL1VvTFN0RHJsZkpvSVZuMU9ZcmdKOXo5Uk9BNWhaL01KS3c9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+isoImage:
+  passwords:
+    deployer: XuriZeniVics1*
+    root: WefeGelg1?Hedu
+kind: VariableCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: generated/secrets.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: generated-secrets
+sshKeys:
+  privateKey: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpQIBAAKCAQEAxcCJrqHLcYdb0rTnLbaxrsIUWYrWQZLIJ2Me3tZiraDSSpez
+    iICHPjhiy9ChOKhL2ztSVF2k30Hi303MtV6Iyn8EQfRriXe3/7Y6kbLrNpFPSnw8
+    k5myhw9BKZlmNRphl804vyBU1F7qAiKKjw9LdTfhTpSnCq14jeFoDPXQaksBq1vs
+    77OT3M9wkRcqLDFi4nwlBhX8ozIvAE6irQr6ojybeu8cU7DPEBpr3sAELeE497i5
+    Mzi67j56eAXTO3LBeIBoda7tOWRSdfrUu1vZs6iyQRq1u4xc48oMG/oGTmXr3Ybw
+    5klJxRM8a3ISQzfJoI9MQV+UDITCNIwe/gcbpQIDAQABAoIBAQCTVYw/LBSjlTH4
+    nwfOq1te1QLMZACWAoJVtif95sTGkBeds8DzZq9c0C3rpJk52UoLIPuKF+sK28/o
+    h9KJHtHT7SaC7VRhq2zPfDnO6/sLQOBOopmPbufwcJEgKUZZMjqcGy64V6JcSAsZ
+    ZBrP05lo0CVxopeCARTcwKABZ/PL/J8GVor+S7kKjiKTlhb2ourDUDR70Y2gevbP
+    CkQLR3JZUc56cRLpRodxX+VNgkp07LUWu6ZxCjXPDLI9GTOWgH/b8swcBvKjTn/L
+    cBhG2q6clJbU0foalBGdR+70vhwlkDu3yQeULfHSLwSG/1GMLfFB0SSmeLwqktlq
+    HeWKuTABAoGBAN2y4N2S3MiY+a8P1JUXq08qG7e2Az8ZemmXSL28EVbyO3oABGY7
+    Cl7MZPEyQtVIIyexCrOqoeZS0YH7l45C1gHf8rykD6M49gpNb7ctvgzcSeKEjQWH
+    vmmHLxuSqrl5g55CpF1Bb/2R54OfQXxJIdzaZshRNWAErVEIP/sybOKlAoGBAORZ
+    LCMSUBN6qLP4H5v/OkyldzljFXApxRIifW/kDzCMr/4pp4LkccERhwNb8HbQJWej
+    1OWRurgJiMWu+aSVBJD5SAY2ZUSJiXc6ufJLWgiHvtfodrWGtvb7lSZzY43S/pup
+    PyYKR8PyZ/reVLzsek7sGq6jZtF3xaMkqtln6QUBAoGBANXVbybIPMQPKOU9s6GK
+    juVwjAOKP19hR70I+lRnTaI7SjrGQXgJglslckdiXywwxBfIn7Xj4vyw7PsenHPO
+    63QreYmSBLM+gbI2NobMS/9DitA9YXfwEizfAwTpVlpHZjgDt11rfIVrcY520Ub7
+    kvnefjzAd2cBm9oIxw2W+YcxAoGAQvUG5S3Mfzm7WDJMioCXhrwKLrCoK6CD4eJt
+    J68W6SSHwp5SOSZlWLib/1cpNp2oKjC3D63gs3BQQ68gEquDkEMYZIH0xdkSjvyQ
+    Y8TGnLO5OTQ4AtiCs/9nZ8P0EDUrZVeGZdAj5Qgih0REUrWA072VwVm2n3tgX4sz
+    8dXvVQECgYEAzT5ZNIk3zIZrT8dcUFfZR9RbiCT/ge1UEMYUB2f+EfByPEPRGA67
+    vf1J+gSgP6ycwTT1McKQgZneY0gsjJ/esVlVyld+KJGCH6f+nKXNdks7CptbYM7p
+    kaBcDNaSJXmR+whAHmo+jH8avgHFzzP1K8xomTGn/fL/LCiAnjVZsts=
+    -----END RSA PRIVATE KEY-----
+  publicKey: |
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFwImuoctxh1vStOcttrGuwhRZitZBksgnYx7e1mKtoNJKl7OIgIc+OGLL0KE4qEvbO1JUXaTfQeLfTcy1XojKfwRB9GuJd7f/tjqRsus2kU9KfDyTmbKHD0EpmWY1GmGXzTi/IFTUXuoCIoqPD0t1N+FOlKcKrXiN4WgM9dBqSwGrW+zvs5Pcz3CRFyosMWLifCUGFfyjMi8ATqKtCvqiPJt67xxTsM8QGmvewAQt4Tj3uLkzOLruPnp4BdM7csF4gGh1ru05ZFJ1+tS7W9mzqLJBGrW7jFzjygwb+gZOZevdhvDmSUnFEzxrchJDN8mgj0xBX5QMhMI0jB7+Bxul
+targetClusterCa:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvekNDQWVlZ0F3SUJBZ0lSQUxpS1VMMFAxQjJLREtPZXlvbWtFK2N3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXpXaGNOTXpFdwpNekV3TURVME16UXpXakFaTVJjd0ZRWURWUVFERXc1TGRXSmxjbTVsZEdWeklFRlFTVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTm1FNkM4cWI3M1JLZ1k2c3BPM3pOZG1KYmNvenZrdjNUWkMKOGxyNXgzK2ZIZnMvVE5mdUxFZWNIcGt1UXl5QmhYS0dIOFAwN0FTMGxYdjBSeUZtejRKdWRsMWpqdmxpTVdrbgpiMjYraDZ4NkNJMWY3V0h1cXVnWThhVlhOTVFQbW9OM0dyTmNkblZWNWJDdDNYV1VDMnJvM2NkTFFPemZtdnlmCjhVOEpjME5IRkw2bHJmV2RXQ1lqSTBlM1JzN2REQ2ZNc296L3paTmgwRW5EWmtqa2VXV3FkQWd1N1dxU0pnWFIKUHB1d2hHcWJ0VUFNWU5YeHgzOEVHVklmS0hQV0I1VjRnYU9UNkxmVER5a3pLYWR6ZVNUYzBUKzEwUjg3WWhyRQo1V25lYm5XazU1bzF3SXF1aEREN2dndEhSRnZNaWJwK3VCbSt2c3JubksrdW5Cd0FKOEVDQXdFQUFhTkNNRUF3CkRnWURWUjBQQVFIL0JBUURBZ0trTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVAKQmdOVkhSTUJBZjhFQlRBREFRSC9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJETGJSalhDZUx5Rk1HOE51TApBczVQTnpGRXlrVUhKOFlsRlVLT1BsN3RicE5KcFpNZWNZdzU5eGU2VE5jUlBYZ2xoZUREM21RaERlbStyZTA3Ci9EYnlscEx4MWlzMTdibzVqSnVXazNuc1dDaE9iQTRHZG1aWllJVXF0c3BJVlZKN0tlMWZpMkJ0RGxBLzFUalgKTnRqZ0I1cW1uNXJFTGU5eGs0M2hveVRBRmpBRkhJVFFvTUsrUWlOU1pHV0NFNlNvNHVRcnpXU1A0RnZ4eDR5TAo2NUloTUw5TE1STnJ0eWFrUW1tRzZrV3FIZFQrdzI2YTdnMVJrZGIyNndFb3FWc05SOGtMZ0FqK2xicUlsMllkCnR2cElndjFEa0loMy9jbDVHdGsyUm1DME1mM3ZtbzhCSDFSd3BDZkVFNUkxenF6RmFvczBBVGtHUkFTMzVoQmoKQ1FyOQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMllUb0x5cHZ2ZEVxQmpxeWs3Zk0xMllsdHlqTytTL2ROa0x5V3ZuSGY1OGQrejlNCjErNHNSNXdlbVM1RExJR0Zjb1lmdy9Uc0JMU1ZlL1JISVdiUGdtNTJYV09PK1dJeGFTZHZicjZIckhvSWpWL3QKWWU2cTZCanhwVmMweEErYWczY2FzMXgyZFZYbHNLM2RkWlFMYXVqZHgwdEE3TithL0oveFR3bHpRMGNVdnFXdAo5WjFZSmlNalI3ZEd6dDBNSjh5eWpQL05rMkhRU2NObVNPUjVaYXAwQ0M3dGFwSW1CZEUrbTdDRWFwdTFRQXhnCjFmSEhmd1FaVWg4b2M5WUhsWGlCbzVQb3Q5TVBLVE1wcDNONUpOelJQN1hSSHp0aUdzVGxhZDV1ZGFUbm1qWEEKaXE2RU1QdUNDMGRFVzh5SnVuNjRHYjYreXVlY3I2NmNIQUFud1FJREFRQUJBb0lCQVFDRlRWa0pScVZ5RzFQNAp1MUlqQ3RuREMzdURrc084bkdPaDFFYzRENmorQWlKYWpnRm10elIxc2l4aVRhS25ETDBlWVNub2FobVdES0VyCmRKbCswOFhKdGk1ZHJ4eTRvaitMcExvNmtSTU9WVDhXZkxvNmNReFY3cXR3VzFBZjh6d0s0eHYrM1dSUEpoUDgKUWFEZFpKdldxZHo0UEpzT1R6NXBJUSsrRXhtTEdVdHVXS0xuUWhpaC9CcmNNSGp4N2p5WE1ZdStiWWlSS2pDNwpjRTBsNXFxSTdDRVFhZHk5anp0Y3JvZEt5emZIMWFITzYrd2svRVFvbDhBTVRKRDFYaTBEYU9IanhwbGhYaEVICkszdElvQUZGc1dKZHlVQWdkS3lFWUdadHQ1YS9lT2VNSUdUcDN0TWlxTkVZbk1BM0h4emR3T1FBdFBXNzAyclEKdVQwN2NObDlBb0dCQVA5eHl0WndNUUxDeXpBYkRJM2hlL09Rcld0UjNoSm5RNWFROEtLeFkxRXJQMGc1MnBTdwpWMlJ2NlNIMEdEYmx4ODYyOWJYUXJPdFdVSWNGVU1nNXlRNTI2VzIybjE2d0RtR0g5RDJUYmNQWW14a3lHR1hyCklTZ3BKRUQ4RTVSWmVEblJBVUdTSWI4TDZHZk56b1A1TGZSdzZkM1RxWW0wc1VUZVpuZTV0d2Q3QW9HQkFObisKQUZoVnBMdExvK1c4ZE5lRkgrTHVWKzVWSmhXcWt1djY5MktzWi9oNFlmZVVndHRjUlNwY3c2VnpzMk9GaTUxdgpST0s4alMzRVBCRXhuZlVIWUZZcDVpSGpEQUEvNXNiWnNvR0ErbUhZUFNlZmYrdWFrUEZYNTlrSWNGdGpQYUkxCjVUUHRoS01GaGdQV3pNTWp2bld4TmtBNmx6alJJdEM0R1FHcEI4cnpBb0dCQU1JckpSdkxPL1gxUzYzTlljV1gKV0RqVUNINURSS0tJaS8rdlBMcnVTNmd2VDNML1J2OHU2NzhVc2dsMUdkTGc1dmhpYW5OQm82OWZkT2F0UzdKbQora1ZjYmlOUFplVDd2bkswZlJzeExZWm81N3hITC9TSXZqTmcwb1h6Rm83MVUwWGZjU3orZjFoUkhOK0t1U2ZvCkNONTkxY2NnVlFhdnF1L0dmZTBUNWVSeEFvR0FCQkpDWDJQNkY2VnFBamhxMWp1ZVJOYSt2YXpKY1U0bVFGSUgKbk1ncmlQQjJvL0VhSUk2d25BSHZoWCtMc2lna1cyUmduUHQ0aDRwS3RPZUFVN3MzaVdSdTcrTVZya3VETytPRQorZlkydHUwYTkwcDdVU01wNGRnS2RIczczZmtVaFpzTUZOUXl6ZmlrY0IzcTVSb2R6SVRxeG5oUnFyWDlPSGkzCnZ0Z3hWUkVDZ1lCZWlJTUl5NzVWL052TXlDdGNOMTBUVGxWSzNJcktXYjlJWDBnRGpZdFFnV2hBdWV3Q1RSTmgKdEJQaWhCUkJjank1Rm5oazVwNEdBblMzSkNhRDIySExIYncvMEU0b0ZQRG5KT2V5WHE5Y00xeDlxNStReVpUSwo3TTMycFF6WndybDZ3U20vRTNIQU42NU85alM5Wm1IOG1LTlcxZ2F0RWxJUUFBNzlPY1R4VUE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+targetKubeconfig:
+  certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvekNDQWVlZ0F3SUJBZ0lSQUxpS1VMMFAxQjJLREtPZXlvbWtFK2N3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXpXaGNOTXpFdwpNekV3TURVME16UXpXakFaTVJjd0ZRWURWUVFERXc1TGRXSmxjbTVsZEdWeklFRlFTVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTm1FNkM4cWI3M1JLZ1k2c3BPM3pOZG1KYmNvenZrdjNUWkMKOGxyNXgzK2ZIZnMvVE5mdUxFZWNIcGt1UXl5QmhYS0dIOFAwN0FTMGxYdjBSeUZtejRKdWRsMWpqdmxpTVdrbgpiMjYraDZ4NkNJMWY3V0h1cXVnWThhVlhOTVFQbW9OM0dyTmNkblZWNWJDdDNYV1VDMnJvM2NkTFFPemZtdnlmCjhVOEpjME5IRkw2bHJmV2RXQ1lqSTBlM1JzN2REQ2ZNc296L3paTmgwRW5EWmtqa2VXV3FkQWd1N1dxU0pnWFIKUHB1d2hHcWJ0VUFNWU5YeHgzOEVHVklmS0hQV0I1VjRnYU9UNkxmVER5a3pLYWR6ZVNUYzBUKzEwUjg3WWhyRQo1V25lYm5XazU1bzF3SXF1aEREN2dndEhSRnZNaWJwK3VCbSt2c3JubksrdW5Cd0FKOEVDQXdFQUFhTkNNRUF3CkRnWURWUjBQQVFIL0JBUURBZ0trTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQVAKQmdOVkhSTUJBZjhFQlRBREFRSC9NQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUJETGJSalhDZUx5Rk1HOE51TApBczVQTnpGRXlrVUhKOFlsRlVLT1BsN3RicE5KcFpNZWNZdzU5eGU2VE5jUlBYZ2xoZUREM21RaERlbStyZTA3Ci9EYnlscEx4MWlzMTdibzVqSnVXazNuc1dDaE9iQTRHZG1aWllJVXF0c3BJVlZKN0tlMWZpMkJ0RGxBLzFUalgKTnRqZ0I1cW1uNXJFTGU5eGs0M2hveVRBRmpBRkhJVFFvTUsrUWlOU1pHV0NFNlNvNHVRcnpXU1A0RnZ4eDR5TAo2NUloTUw5TE1STnJ0eWFrUW1tRzZrV3FIZFQrdzI2YTdnMVJrZGIyNndFb3FWc05SOGtMZ0FqK2xicUlsMllkCnR2cElndjFEa0loMy9jbDVHdGsyUm1DME1mM3ZtbzhCSDFSd3BDZkVFNUkxenF6RmFvczBBVGtHUkFTMzVoQmoKQ1FyOQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURERENDQWZTZ0F3SUJBZ0lSQU9sOFM2UC9lVTlJV04zeW94emhIWXN3RFFZSktvWklodmNOQVFFTEJRQXcKR1RFWE1CVUdBMVVFQXhNT1MzVmlaWEp1WlhSbGN5QkJVRWt3SGhjTk1qRXdNekV5TURVME16UXpXaGNOTWpJdwpNekV5TURVME16UXpXakFwTVJjd0ZRWURWUVFLRXc1emVYTjBaVzA2YldGemRHVnljekVPTUF3R0ExVUVBeE1GCllXUnRhVzR3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ1p3c0h2Y1k0cTZDVk8KaDk1SXhxYnhyRFZsOG13WlFsQW1FTFQzdjZ4NGFuOVpJL3R6Z1AvMitSenZiNnBRRFhIWjhtVkNhZzkwWDRDKwo5RXJ5TUkzMS9NSWplcXlEZ3lmQjlYY3lyTUp6MFRla2QzdVFzdzd1clA1cnh6Z3htSDMxT0VkZmhOMVJxd1B2CkJKcit3TmRpQnFrQytuWFY3emo4YzBoNGo4VFUvS0ZRWE5sUFBxOERiTUhnU2c5Q0dxMS9IRVFWMDBnSGd0M0MKd09jWE1xRXRCMmw0dURIWFc1N2lwN29acWIvWlpITnVNY3pMclpSb3JrcVVnOXE1MzNIMG1Dc2dmZ1NvMXFLbAowTE5jYkN1SE1ua0NNSFdCN1liTVdmd0FMQXVtQUFPdDFzV1BzQlZGUjd6ZTRYYzhwRm16WGxZVURLTGJuYkZPClZYRGJCWkNQQWdNQkFBR2pQekE5TUE0R0ExVWREd0VCL3dRRUF3SUZvREFkQmdOVkhTVUVGakFVQmdnckJnRUYKQlFjREFRWUlLd1lCQlFVSEF3SXdEQVlEVlIwVEFRSC9CQUl3QURBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQQpnbzVvVGNxa3U3bGU3UytCUkdFbnhlRlVkblRSQWxIV3k0RytOVkNQSERCdGNIWVBDcElTUVE5cElKWDhoM0tlCmJrZVA2ZkkyY0ZXOURGS2lray9tK21jWExoMUlCa3lGYnRsVDQ4Q3pybWdFMHNoMG5XUW9aamtNVCt5VU5YK1cKZE1YMUdtanFNNVBnUDhzaGNKTXpyUXNEUjMyczMzSW9LdDdTUGYrNC9lSExpLy9qUzdYcVRXVU9sdlo2dmZVYgpwT3p6Yk15UGpnWmpja3NZSHI5blVYeThjdFBlV2tFLzkrQmxQa25NSm9KQmZ3SjU5ak01RThYMyswT0VBQ3lWCmR5bUtseFZKOVZYQWtKTEFyTTVXYzZqbW1lcjZ5cnlmeDltNmdBaXRPUHdRcWZnV3AzNnZpNTNlSVVsZmllbGgKQnA5cFpWU3NHSGYxWjVNelNuRzFQUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBbWNMQjczR09LdWdsVG9mZVNNYW04YXcxWmZKc0dVSlFKaEMwOTcrc2VHcC9XU1A3CmM0RC85dmtjNzIrcVVBMXgyZkpsUW1vUGRGK0F2dlJLOGpDTjlmekNJM3FzZzRNbndmVjNNcXpDYzlFM3BIZDcKa0xNTzdxeithOGM0TVpoOTlUaEhYNFRkVWFzRDd3U2Evc0RYWWdhcEF2cDExZTg0L0hOSWVJL0UxUHloVUZ6WgpUejZ2QTJ6QjRFb1BRaHF0Znh4RUZkTklCNExkd3NEbkZ6S2hMUWRwZUxneDExdWU0cWU2R2FtLzJXUnpiakhNCnk2MlVhSzVLbElQYXVkOXg5SmdySUg0RXFOYWlwZEN6WEd3cmh6SjVBakIxZ2UyR3pGbjhBQ3dMcGdBRHJkYkYKajdBVlJVZTgzdUYzUEtSWnMxNVdGQXlpMjUyeFRsVncyd1dRandJREFRQUJBb0lCQUJlTm5OV0g2SVlzRDJMcgpMeUtvdzNQcnREWk1uMEJ6UndHOXQycm9Bb3hqaStSa3ZhVGcwdFRMTGlLRFVXeDMwc1BXL0tuaXcwRkpTOWgwClpYS1orM1Q5NWVNM2JHdXMwSTlHZ1o3U2xlclYxcGNyOGxLbEN4bUdpR2FNR3RDR0VtMVkxSjRPSlRUWVpIN2QKanJ5Tlg3RFZZbGhoYzJGMUJwNnRMaUhCckI0UDVBQ0w2ZzBzTHJoaVVOdytxZndYamwrU0pEZVNFWWJ4NXJURgoxY1p6QmpLRFd5RmJHUXlHVmYvajBTL3BvWFBDRWcwd2R5Mmt1RVlPNFRjdzdJeTArdW0vSnhSa1R0aUpIL2ZQCks0TGNCSExuK1cxNWpIZlovQis0djdSZ3V4cUdDUzh4V1JzejUwcWRjOVZzcGxRR1ZFTTJHVjFlN0IxMzUwTzAKTjlWbVZma0NnWUVBeUtIeU53MWhZak5lMXNTSGtUSHBXSVJjcmpUNXpEUmRLRjdwQ2k3cVkxVFc4MkMwcE1HcApHMFlYYkx6NGdxSkZ4bER4cVJjQ0VOOXU3bkllMit4VEpRYVNxTHhxdHlxckN5RnVwS3RoT0JWSExZKytGNHNaCjZac3VKVjIvaUdhYVpDTldwbnh3bXl5RnJmUEFNS0lqVW5RbVRQWk5LSi9sY3dKaDhCZmNUS1VDZ1lFQXhERjMKU3RiVkt3a1pJZVVTdko5UVFKTm9NMU4zbkM5RkZVZkhZQ2JEZnFjMjBlMjZaN3h2Z3NPcEkwUi9PU2FianFqMApjY2tmdjFjdm5ud25Jem9rTVFOOXhqdm04NEZpVkNWM2F5NXFYYnUwK0ZST1FuMW9Ma3cwZjJ0YmFrQW9qbzFFCk5vV0tpYmNmZXhoTi9BeFk0aFF3czhlRjlocmY0TVZMeGF5dzNpTUNnWUVBaXJxUVJValhRWlBMekMxd29CRW4KRExIWmRBdmxmakhuQ0hjNEpIWjBVK0xpRHIrYnFTRFAwYkFSbW5yQVMzUHhVME85RmZKMjF6dm45TENzYmQxbgpVSDdQQWlYbWxHakloSlhGYjgraEZhcUE0Uncza1FmNkR2SGlZcXdFT0VqYUVNdnVxb2Y1UlJMd0RHd3pSRzJZCmh2Y1JWTDRxZENDOEExNXVZaG5kbHBFQ2dZQnB6b09YU09VTm9JcDlUUjBkdkkxN1JnUWNLaGVIazdhZUUyZmkKNHdUcmVTS0hkTDNpMUMwUFNKWWUvd0hkd0lTRUczbzVJMDZMMG1sTC80amI1cTg5LzdRRkJLazVDYjROdzJiegoxc1JtYUtUZ2lCYnNwTlZhb3A1dFdXaWpsSlpLeXNUTzRwWWtUeTRiSkxCcURmNmhibUlWa3JVY1ZNSUlabDdHCjdLczJJUUtCZ0M2MVB2eVRUTUN5MlkrWFpnZzdseWhhZVlYYi9waDNHa2dVdzVVSEZkbTRxTEd4N0lOTjNtRnUKZm5XMFlMb1AxSEU0dmp6d3hGSGgxS3VSSURVaWp0NENCUUM2RktEYk9ROWlnZ29nKzI2SVp4TnRGSG1ydWlFdQpaSDh5YVA4Sm5INDhOUHc2YnFEY2dWSFB0Snl5TTlPZ3RkUklUaDdxWVd2cXVyNFZwR2RBCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+---
+apiVersion: airshipit.org/v1alpha1
+hosts:
+  m3:
+    node01:
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-target-1
+      bmcPassword: r00tme
+      bmcUsername: root
+      bootMode: legacy
+      disableCertificateVerification: false
+      hardwareProfile: default
+      ipAddresses:
+        oam-ipv4: 10.23.25.102
+        pxe-ipv4: 10.23.24.102
+      labels:
+        airshipit.org/example-label: label-bmh-like-this
+      macAddress: 52:54:00:b6:ed:31
+      macAddresses:
+        oam: 52:54:00:9b:27:4c
+        pxe: 52:54:00:b6:ed:31
+    node02:
+      bmcAddress: redfish+https://10.23.25.1:8443/redfish/v1/Systems/air-ephemeral
+      bmcPassword: password
+      bmcUsername: username
+      bootMode: legacy
+      disableCertificateVerification: false
+      hardwareProfile: default
+      ipAddresses:
+        oam-ipv4: 10.23.25.101
+        pxe-ipv4: 10.23.24.101
+      macAddress: 52:54:00:b6:ed:02
+      macAddresses:
+        oam: 52:54:00:9b:27:02
+        pxe: 52:54:00:b6:ed:02
+    node03:
+      bmcAddress: redfish+http://10.23.25.1:8000/redfish/v1/Systems/air-worker-1
+      bmcPassword: password
+      bmcUsername: username
+      bootMode: legacy
+      disableCertificateVerification: false
+      hardwareProfile: default
+      ipAddresses:
+        oam-ipv4: 10.23.25.103
+        pxe-ipv4: 10.23.24.103
+      macAddress: 52:54:00:b6:ed:23
+      macAddresses:
+        oam: 52:54:00:9b:27:07
+        pxe: 52:54:00:b6:ed:23
+    node04:
+      bmcAddress: redfish+http://10.23.25.2:8000/redfish/v1/Systems/air-target-2
+      bmcPassword: password
+      bmcUsername: username
+      bootMode: UEFI
+      hardwareProfile: default
+      ipAddresses:
+        oam-ipv4: 10.23.25.104
+        pxe-ipv4: 10.23.24.104
+      macAddress: 52:54:00:36:5e:e3
+      macAddresses:
+        oam: 52:54:00:dc:ab:04
+        pxe: 52:54:00:51:0b:e4
+kind: VariableCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: variablecatalogue_host-catalogue.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: host-catalogue
+---
+apiVersion: airshipit.org/v1alpha1
+dummySecret: someDummySecret
+kind: VariableCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: imported/secrets.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: imported-secrets
+---
+apiVersion: airshipit.org/v1alpha1
+kind: VersionsCatalogue
+metadata:
+  annotations:
+    config.kubernetes.io/path: versionscatalogue_versions-airshipctl.yaml
+  labels:
+    airshipit.org/deploy-k8s: "false"
+  name: versions-airshipctl
+spec:
+  capi_images:
+    cabpk:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+    cacpk:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+    capd:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.0
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api
+        tag: v20201019-v0.3.10-86-gc1647481f
+    capg:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api-gcp
+        tag: master
+    capi:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: us.gcr.io/k8s-artifacts-prod/cluster-api
+        tag: v0.3.7
+    capm3:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.5.0
+      ipam-manager:
+        repository: quay.io/metal3-io
+        tag: v0.0.5
+      manager:
+        repository: quay.io/metal3-io
+        tag: v0.4.2
+    capo:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: gcr.io/k8s-staging-capi-openstack
+        tag: v20200707-v0.3.1
+    capz:
+      auth_proxy:
+        repository: gcr.io/kubebuilder
+        tag: v0.4.1
+      manager:
+        repository: gcr.io/k8s-staging-cluster-api-azure
+        tag: v0.4.9
+  charts:
+    ingress-nginx:
+      chart: ingress-nginx
+      version: 3.5.1
+  files:
+    k8scontrol:
+      cluster_controlplane_image:
+        checksum: http://10.23.24.101:80/images/control-plane.qcow2.md5sum
+        url: http://10.23.24.101:80/images/control-plane.qcow2
+  helm_repositories:
+    ingress-nginx:
+      url: https://kubernetes.github.io/ingress-nginx
+  image_repositories:
+    cni:
+      name: tigera-operator
+      repository: quay.io
+    controlplane:
+      name: kubeadm-clusterConfiguration
+      repository: k8s.gcr.io
+    kube-webhook-certgen:
+      name: kube-webhook-certgen
+      repository: quay.io/airshipit/kube-webhook-certgen
+  images:
+    baremetal_operator:
+      ironic:
+        dnsmasq:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.2
+        httpd:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.2
+        init_bootstrap:
+          image: quay.io/centos/centos:8.3.2011
+        init_images:
+          image: quay.io/airshipit/ipa:latest
+        ironic:
+          image: quay.io/metal3-io/ironic:capm3-v0.4.2
+        ironic_inspector:
+          image: quay.io/metal3-io/ironic-inspector:capm3-v0.4.1
+        qcow_bundle:
+          image: quay.io/airshipit/qcow-bundle:latest-ubuntu_focal
+      metal3_baremetal_operator:
+        baremetal_operator:
+          image: quay.io/metal3-io/baremetal-operator:capm3-v0.4.2
+        ironic_inspector_proxy:
+          image: quay.io/airshipit/socat:1.7.4.1
+        ironic_proxy:
+          image: quay.io/airshipit/socat:1.7.4.1
+    calico_v3:
+      kube_controllers:
+        calico_kube_controllers:
+          image: quay.io/calico/kube-controllers:v3.15.1
+      node:
+        calico_node:
+          image: quay.io/calico/node:v3.15.1
+        flexvol_driver:
+          image: quay.io/calico/pod2daemon-flexvol:v3.15.1
+        install_cni:
+          image: quay.io/calico/cni:v3.15.1
+        upgrade_ipam:
+          image: quay.io/calico/cni:v3.15.1
+    cert-manager:
+      cainjector:
+        manager:
+          image: quay.io/jetstack/cert-manager-cainjector:v1.1.0
+      controller:
+        manager:
+          image: quay.io/jetstack/cert-manager-controller:v1.1.0
+      webhook:
+        manager:
+          image: quay.io/jetstack/cert-manager-webhook:v1.1.0
+    flux:
+      helm_controller:
+        manager:
+          image: ghcr.io/fluxcd/helm-controller:v0.11.1
+      source_controller:
+        manager:
+          image: ghcr.io/fluxcd/source-controller:v0.15.3
+    helm_operator:
+      helm_operator:
+        helm_operator:
+          image: docker.io/fluxcd/helm-operator:1.2.0
+    hwcc:
+      manager:
+        kube_rbac_proxy:
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+        manager:
+          image: quay.io/dell_sp/hwcc:v1.3
+    image_builder:
+      image_builder:
+        image_builder:
+          image: quay.io/airshipit/image-builder:4ca0c71e6eab659e9a335fabca4bc54b68941aeb-ubuntu_focal
+    tigera_operator:
+      tigera_operator:
+        repository:
+          image: quay.io/tigera/operator:v1.15.0
+  kubernetes: v1.18.6

@@ -1,0 +1,83 @@
+# These rules inject host-specific information from the `host-catalogue`
+# into the hostgenerator-m3 function's Template plugin config.
+apiVersion: airshipit.org/v1alpha1
+kind: ReplacementTransformer
+metadata:
+  name: baremetal-operator-versions-replacements
+  annotations:
+    config.kubernetes.io/function: |-
+      container:
+        image: localhost/replacement-transformer
+replacements:
+# Container versions for the ironic Deployment
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.init_bootstrap.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-bootstrap')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.init_images.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'init-images')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.qcow_bundle.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.initContainers[?(.name == 'qcow-bundle')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.dnsmasq.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'dnsmasq')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.httpd.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'httpd')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic')].image}"]
+- source:
+    objref:
+      kind: VersionsCatalogue
+      name: versions-airshipctl
+    fieldref: "{.spec.images.baremetal_operator.ironic.ironic_inspector.image}"
+  target:
+    objref:
+      kind: Deployment
+      name: ironic
+    fieldrefs: ["{.spec.template.spec.containers[?(.name == 'ironic-inspector')].image}"]
+# Container versions for the metal3-baremetal-operator Deployment

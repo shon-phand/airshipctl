@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: metal3
+bases:
+- ../upstream/crd
+
+patchesStrategicMerge:
+- patches/label_baremetalhosts_crd.yaml
+
+patchesJson6902:
+  - target:
+      version: v1
+      kind: CustomResourceDefinition
+      name: baremetalhosts.metal3.io
+    path: patches/firmware_baremetalhosts_crd.yaml

@@ -478,3 +478,29 @@ config:
     apiVersion: airshipit.org/v1alpha1
     kind: GenericContainer
     name: kubectl-check-ingress-ctrl
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: upgrade-bmo-target
+  clusterName: target-cluster
+config:
+  cluster: target-cluster
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: target/upgrade
+---
+apiVersion: airshipit.org/v1alpha1
+kind: Phase
+metadata:
+  name: upgrade-ironic-target
+  clusterName: target-cluster
+config:
+  cluster: target-cluster
+  executorRef:
+    apiVersion: airshipit.org/v1alpha1
+    kind: KubernetesApply
+    name: kubernetes-apply
+  documentEntryPoint: target/upgrade_ironic

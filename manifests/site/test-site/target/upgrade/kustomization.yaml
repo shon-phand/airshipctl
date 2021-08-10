@@ -1,0 +1,8 @@
+resources:
+  - ../../../../function/baremetal-operator/v0.4.2
+  - ../../../../function/clusterctl/
+  - ../catalogues
+
+transformers:
+  - ../../../../function/baremetal-operator/v0.4.2/replacements
+  - ../../../../function/clusterctl/replacements

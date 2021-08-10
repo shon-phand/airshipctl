@@ -1,0 +1,6 @@
+resources:
+- ../../../../function/ironic-deployment/v0.4.2/
+- ../catalogues
+ 
+transformers:
+- ../../../../function/ironic-deployment/v0.4.2/replacements

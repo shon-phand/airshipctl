@@ -216,7 +216,7 @@ func (c *ClusterctlExecutor) getKubeconfig() (string, string, func(), error) {
 func (c *ClusterctlExecutor) init(evtCh chan events.Event) {
 	evtCh <- events.NewEvent().WithClusterctlEvent(events.ClusterctlEvent{
 		Operation: events.ClusterctlInitStart,
-		Message:   "starting clusterctl init executor",
+		Message:   "starting clusterctl upgrade apply executor",
 	})
 
 	kubecfg, context, cleanup, err := c.getKubeconfig()
@@ -227,9 +227,10 @@ func (c *ClusterctlExecutor) init(evtCh chan events.Event) {
 	defer cleanup()
 
 	c.cctlOpts.CmdOptions = append(c.cctlOpts.CmdOptions,
-		"init",
+		"upgrade","apply",
 		"--kubeconfig", kubecfg,
 		"--kubeconfig-context", context,
+		"--management-group","capi-system/cluster-api",
 	)
 
 	initMap := map[string]string{

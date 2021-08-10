@@ -1,0 +1,12 @@
+- op: add
+  path: /spec/versions/0/schema/openAPIV3Schema/properties/spec/properties/firmware
+  value:
+    description: firmware holds the reference for creating and consuming hardware profiles
+    properties:
+      simultaneousMultithreadingDisabled:
+        type: boolean
+      sriovEnabled:
+        type: boolean
+      virtualizationDisabled:
+        type: boolean
+    type: object
